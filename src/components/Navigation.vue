@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Activity, Dumbbell, Calendar, BarChart3, PlusCircle, UserCheck, LogOut, Database } from 'lucide-vue-next';
+import { Activity, Dumbbell, Calendar, BarChart3, PlusCircle, UserCheck, LogOut } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
 
 defineProps<{
@@ -8,7 +8,6 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'changeTab', tab: string): void;
-  (e: 'openConfigModal'): void;
   (e: 'openAuthModal'): void;
 }>();
 
@@ -66,15 +65,6 @@ const { user, isDemoMode, logout } = useAuth();
     </nav>
 
     <div className="user-profile-badge">
-      <button
-        className="btn btn-secondary"
-        style="padding: 0.45rem 0.65rem; font-size: 0.8rem; min-height: 38px;"
-        @click="emit('openConfigModal')"
-        title="Configuración de Supabase"
-      >
-        <Database :size="16" />
-      </button>
-
       <div v-if="user" style="display: flex; align-items: center; gap: 0.5rem;">
         <div style="text-align: right;">
           <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">

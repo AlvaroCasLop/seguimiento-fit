@@ -7,11 +7,9 @@ import ExerciseCatalog from './components/ExerciseCatalog.vue';
 import AnalyticsCharts from './components/AnalyticsCharts.vue';
 import CalendarView from './components/CalendarView.vue';
 import AuthModal from './components/AuthModal.vue';
-import SupabaseConfigModal from './components/SupabaseConfigModal.vue';
 
 const activeTab = ref('dashboard');
 const showAuthModal = ref(false);
-const showConfigModal = ref(false);
 </script>
 
 <template>
@@ -19,7 +17,6 @@ const showConfigModal = ref(false);
     <Navigation
       :activeTab="activeTab"
       @changeTab="tab => activeTab = tab"
-      @openConfigModal="showConfigModal = true"
       @openAuthModal="showAuthModal = true"
     />
 
@@ -51,11 +48,6 @@ const showConfigModal = ref(false);
     <AuthModal
       :isOpen="showAuthModal"
       @close="showAuthModal = false"
-    />
-
-    <SupabaseConfigModal
-      :isOpen="showConfigModal"
-      @close="showConfigModal = false"
     />
   </div>
 </template>
