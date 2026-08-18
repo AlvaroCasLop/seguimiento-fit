@@ -71,21 +71,22 @@ const handleSubmit = async () => {
   const preparedLogs: Omit<ExerciseLog, 'id' | 'sesion_id'>[] = logs.value.map(l => {
     const ex = exercises.value.find(e => e.id === l.ejercicio_id);
     const isFuerza = ex?.tipo_metrica === 'peso_reps';
+    const isTiempoPeso = ex?.tipo_metrica === 'tiempo_peso';
     const isCardio = ex?.tipo_metrica === 'tiempo_distancia' || ex?.tipo_metrica === 'tiempo_desnivel' || ex?.tipo_metrica === 'solo_tiempo';
 
-    const totalSegundos = parseTimeToSeconds(l.horas, l.minutos, l.segundos);
+    const totalSegundos = (isCardio || isTiempoPeso) ? parseTimeToSeconds(l.horas, l.minutos, l.segundos) : undefined;
     const rmEstimado = isFuerza ? calculate1RM(l.peso_kg, l.repeticiones) : undefined;
-    const ritmoCalculado = isCardio && ex ? formatPace(totalSegundos, l.distancia, ex.categoria, ex.unidad_distancia) : undefined;
+    const ritmoCalculado = isCardio && ex ? formatPace(totalSegundos || 0, l.distancia, ex.categoria, ex.unidad_distancia) : undefined;
 
     return {
       ejercicio_id: l.ejercicio_id,
       ejercicio_nombre: ex?.nombre,
       categoria: ex?.categoria,
-      peso_kg: isFuerza ? Number(l.peso_kg) : undefined,
+      peso_kg: (isFuerza || isTiempoPeso) ? Number(l.peso_kg) : undefined,
       repeticiones: isFuerza ? Number(l.repeticiones) : undefined,
       rm_estimado: rmEstimado,
       distancia: isCardio ? Number(l.distancia) : undefined,
-      tiempo_segundos: isCardio ? totalSegundos : undefined,
+      tiempo_segundos: totalSegundos,
       desnivel_positivo: ex?.tipo_metrica === 'tiempo_desnivel' ? Number(l.desnivel_positivo) : undefined,
       ritmo_calculado: ritmoCalculado,
       notas: l.notas
@@ -218,6 +219,23 @@ const handleSubmit = async () => {
                   <div style="font-size: 0.75rem; color: var(--text-muted);">1RM Estimado</div>
                   <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent-orange);">
                     {{ calculate1RM(log.peso_kg, log.repeticiones) }} kg
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tiempo + Peso (ej. HYROX / CrossFit WODs con peso) -->
+              <div v-else-if="ex?.tipo_metrica === 'tiempo_peso'" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: center;">
+                <div className="form-group">
+                  <label>Peso ({{ ex.unidad_peso || 'kg' }})</label>
+                  <input type="number" step="0.5" className="form-control" v-model.number="log.peso_kg" />
+                </div>
+
+                <div className="form-group">
+                  <label>Tiempo Total (H : M : S)</label>
+                  <div style="display: flex; gap: 0.25rem;">
+                    <input type="number" min="0" className="form-control" placeholder="h" v-model.number="log.horas" />
+                    <input type="number" min="0" max="59" className="form-control" placeholder="m" v-model.number="log.minutos" />
+                    <input type="number" min="0" max="59" className="form-control" placeholder="s" v-model.number="log.segundos" />
                   </div>
                 </div>
               </div>

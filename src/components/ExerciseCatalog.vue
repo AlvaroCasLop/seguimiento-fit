@@ -104,6 +104,7 @@ const handleCreate = async () => {
           <span v-if="ex.tipo_metrica === 'peso_reps'"> Peso ({{ ex.unidad_peso || 'kg' }}) + Reps -> 1RM</span>
           <span v-else-if="ex.tipo_metrica === 'tiempo_distancia'"> Tiempo + Distancia ({{ ex.unidad_distancia || 'km' }}) -> Ritmo</span>
           <span v-else-if="ex.tipo_metrica === 'tiempo_desnivel'"> Tiempo + Distancia + Desnivel +m</span>
+          <span v-else-if="ex.tipo_metrica === 'tiempo_peso'"> Tiempo + Peso ({{ ex.unidad_peso || 'kg' }})</span>
           <span v-else> Tiempo acumulado</span>
         </div>
 
@@ -156,7 +157,7 @@ const handleCreate = async () => {
             </select>
           </div>
 
-          <div v-if="tipoMetrica === 'peso_reps'" className="form-group">
+          <div v-if="tipoMetrica === 'peso_reps' || tipoMetrica === 'tiempo_peso'" className="form-group">
             <label>Unidad de Peso Principal</label>
             <select className="form-control" v-model="unidadPeso">
               <option value="kg">Kilogramos (kg)</option>

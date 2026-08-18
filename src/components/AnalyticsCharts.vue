@@ -77,42 +77,70 @@ const lineChartData = computed(() => {
   });
 
   const isFuerza = selectedEx.value?.tipo_metrica === 'peso_reps';
+  const isTiempoPeso = selectedEx.value?.tipo_metrica === 'tiempo_peso';
+
+  if (isFuerza) {
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Peso Usado (kg)',
+          borderColor: '#ff6b4a',
+          backgroundColor: 'rgba(255, 107, 74, 0.2)',
+          data: weightData,
+          tension: 0.3
+        },
+        {
+          label: '1RM Estimado (kg)',
+          borderColor: '#00f2fe',
+          backgroundColor: 'rgba(0, 242, 254, 0.2)',
+          data: rmData,
+          tension: 0.3
+        }
+      ]
+    };
+  }
+
+  if (isTiempoPeso) {
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Peso Usado (kg)',
+          borderColor: '#ff6b4a',
+          backgroundColor: 'rgba(255, 107, 74, 0.2)',
+          data: weightData,
+          tension: 0.3
+        },
+        {
+          label: 'Tiempo Total (min)',
+          borderColor: '#4facfe',
+          backgroundColor: 'rgba(79, 172, 254, 0.2)',
+          data: timeData,
+          tension: 0.3
+        }
+      ]
+    };
+  }
 
   return {
     labels,
-    datasets: isFuerza
-      ? [
-          {
-            label: 'Peso Usado (kg)',
-            borderColor: '#ff6b4a',
-            backgroundColor: 'rgba(255, 107, 74, 0.2)',
-            data: weightData,
-            tension: 0.3
-          },
-          {
-            label: '1RM Estimado (kg)',
-            borderColor: '#00f2fe',
-            backgroundColor: 'rgba(0, 242, 254, 0.2)',
-            data: rmData,
-            tension: 0.3
-          }
-        ]
-      : [
-          {
-            label: 'Distancia (km/m)',
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-            data: distanceData,
-            tension: 0.3
-          },
-          {
-            label: 'Tiempo (min)',
-            borderColor: '#4facfe',
-            backgroundColor: 'rgba(79, 172, 254, 0.2)',
-            data: timeData,
-            tension: 0.3
-          }
-        ]
+    datasets: [
+      {
+        label: 'Distancia (km/m)',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        data: distanceData,
+        tension: 0.3
+      },
+      {
+        label: 'Tiempo (min)',
+        borderColor: '#4facfe',
+        backgroundColor: 'rgba(79, 172, 254, 0.2)',
+        data: timeData,
+        tension: 0.3
+      }
+    ]
   };
 });
 

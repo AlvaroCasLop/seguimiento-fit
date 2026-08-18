@@ -1,6 +1,6 @@
 export type ActivityCategory = 'fuerza' | 'carrera' | 'ciclismo' | 'natacion' | 'esqui' | 'hyrox' | 'crossfit' | 'otro';
 
-export type MetricType = 'peso_reps' | 'tiempo_distancia' | 'tiempo_desnivel' | 'solo_tiempo';
+export type MetricType = 'peso_reps' | 'tiempo_distancia' | 'tiempo_desnivel' | 'solo_tiempo' | 'tiempo_peso';
 
 export interface Exercise {
   id: string;
