@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle, Clock } from 'lucide-vue-next';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle, Clock, Edit3, Trash2 } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
-import { getWorkoutSessions } from '../services/fitnessService';
+import { getWorkoutSessions, deleteWorkoutSession } from '../services/fitnessService';
 import { WorkoutSession } from '../types/fitness';
+
+const emit = defineEmits<{
+  (e: 'editSession', session: WorkoutSession): void;
+}>();
 
 const { user } = useAuth();
 const sessions = ref<WorkoutSession[]>([]);
@@ -16,6 +20,13 @@ const loadSessions = async () => {
 
 onMounted(loadSessions);
 watch(user, loadSessions);
+
+const handleDelete = async (sessionId: string) => {
+  if (confirm('¿Estás seguro de que deseas eliminar esta sesión de entrenamiento?')) {
+    await deleteWorkoutSession(sessionId, user.value?.id);
+    await loadSessions();
+  }
+};
 
 const year = computed(() => currentDate.value.getFullYear());
 const month = computed(() => currentDate.value.getMonth());
@@ -55,10 +66,10 @@ const selectedDaySessions = computed(() => {
       <div>
         <h2 style="font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.6rem;">
           <CalendarIcon color="var(--accent-cyan)" :size="28" />
-          <span>Calendario de Entrenamientos 📅 (Vue 3)</span>
+          <span>Calendario de Entrenamientos 📅</span>
         </h2>
         <p style="color: var(--text-muted); font-size: 0.9rem;">
-          Audita los días que has entrenado y consulta el desglose diario de cada sesión.
+          Audita los días que has entrenado, edita o borra sesiones registradas.
         </p>
       </div>
 
@@ -123,7 +134,7 @@ const selectedDaySessions = computed(() => {
         </div>
       </div>
 
-      <!-- Detalle Lateral -->
+      <!-- Detalle Lateral con Opciones de Editar / Eliminar -->
       <div className="glass-card" style="padding: 1.5rem;">
         <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
           {{ selectedDateStr ? `Detalle: ${selectedDateStr}` : 'Selecciona un Día' }}
@@ -139,8 +150,18 @@ const selectedDaySessions = computed(() => {
 
         <div v-else style="display: flex; flex-direction: column; gap: 1.25rem;">
           <div v-for="ses in selectedDaySessions" :key="ses.id" style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-            <div style="font-weight: 800; font-size: 1rem; color: var(--accent-cyan); margin-bottom: 0.35rem;">
-              {{ ses.nombre_sesion }}
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+              <div style="font-weight: 800; font-size: 1rem; color: var(--accent-cyan);">
+                {{ ses.nombre_sesion }}
+              </div>
+              <div style="display: flex; gap: 0.35rem;">
+                <button className="btn btn-secondary" style="padding: 0.25rem 0.45rem; min-height: 28px;" @click="emit('editSession', ses)" title="Editar sesión">
+                  <Edit3 :size="14" />
+                </button>
+                <button className="btn btn-danger" style="padding: 0.25rem 0.45rem; min-height: 28px;" @click="handleDelete(ses.id)" title="Eliminar sesión">
+                  <Trash2 :size="14" />
+                </button>
+              </div>
             </div>
 
             <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">

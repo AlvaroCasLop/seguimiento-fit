@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { Trophy, Flame, Calendar, Dumbbell, Activity, Bike, Waves, Snowflake, TrendingUp, Plus } from 'lucide-vue-next';
+import { Trophy, Flame, Calendar, Dumbbell, Activity, Bike, Waves, Snowflake, TrendingUp, Plus, Edit3, Trash2 } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
-import { getWorkoutSessions, getPersonalRecords, formatTime } from '../services/fitnessService';
+import { getWorkoutSessions, getPersonalRecords, deleteWorkoutSession, formatTime } from '../services/fitnessService';
 import { WorkoutSession, PersonalRecord } from '../types/fitness';
 
 const emit = defineEmits<{
   (e: 'goToLogger'): void;
   (e: 'goToAnalytics'): void;
+  (e: 'editSession', session: WorkoutSession): void;
 }>();
 
 const { user } = useAuth();
@@ -29,7 +30,13 @@ const loadData = async () => {
 onMounted(loadData);
 watch(user, loadData);
 
-// Propiedades computadas
+const handleDelete = async (sessionId: string) => {
+  if (confirm('¿Estás seguro de que deseas eliminar esta sesión de entrenamiento?')) {
+    await deleteWorkoutSession(sessionId, user.value?.id);
+    await loadData();
+  }
+};
+
 const sessionsThisMonth = computed(() => {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -82,7 +89,7 @@ const streakDays = computed(() => {
           ¡Hola, {{ user?.email?.split('@')[0] || 'Atleta' }}! 👋
         </h1>
         <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 600px;">
-          Registra tus RMs, carreras, bici, natación, esquí, HYROX y CrossFit.
+          Registra y edita tus RMs, carreras, bici, natación, esquí, HYROX y CrossFit.
         </p>
       </div>
 
@@ -192,7 +199,7 @@ const streakDays = computed(() => {
         </div>
       </div>
 
-      <!-- Últimas Sesiones -->
+      <!-- Últimas Sesiones con Botón de Editar -->
       <div className="glass-card" style="padding: 1.5rem;">
         <h2 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
           <TrendingUp color="var(--accent-cyan)" :size="22" />
@@ -209,13 +216,31 @@ const streakDays = computed(() => {
             :key="ses.id"
             style="padding: 0.9rem 1.1rem; background: rgba(15, 23, 42, 0.6); border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.4rem;"
           >
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
               <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">
                 {{ ses.nombre_sesion }}
               </div>
-              <span style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600;">
-                {{ ses.fecha }}
-              </span>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600;">
+                  {{ ses.fecha }}
+                </span>
+                <button
+                  className="btn btn-secondary"
+                  style="padding: 0.25rem 0.5rem; min-height: 30px; font-size: 0.75rem;"
+                  @click="emit('editSession', ses)"
+                  title="Editar sesión"
+                >
+                  <Edit3 :size="14" />
+                </button>
+                <button
+                  className="btn btn-danger"
+                  style="padding: 0.25rem 0.5rem; min-height: 30px; font-size: 0.75rem;"
+                  @click="handleDelete(ses.id)"
+                  title="Eliminar sesión"
+                >
+                  <Trash2 :size="14" />
+                </button>
+              </div>
             </div>
 
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem;">

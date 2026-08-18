@@ -346,6 +346,97 @@ export async function saveWorkoutSession(
   return createdSession;
 }
 
+export async function updateWorkoutSession(
+  sessionId: string,
+  sessionData: Omit<WorkoutSession, 'id'>,
+  logs: Omit<ExerciseLog, 'id' | 'sesion_id'>[],
+  userId?: string
+): Promise<WorkoutSession> {
+  const supabase = getSupabaseClient();
+
+  if (supabase && userId && userId !== 'demo-user-id-fit-12345') {
+    // Actualizar datos de la sesión
+    await supabase
+      .from('sesiones_entrenamiento')
+      .update({
+        fecha: sessionData.fecha,
+        nombre_sesion: sessionData.nombre_sesion,
+        notas: sessionData.notas,
+        duracion_total_min: sessionData.duracion_total_min
+      })
+      .eq('id', sessionId);
+
+    // Borrar logs anteriores e insertar los nuevos
+    await supabase
+      .from('registros_ejercicio')
+      .delete()
+      .eq('sesion_id', sessionId);
+
+    const logsToInsert = logs.map(l => ({
+      user_id: userId,
+      sesion_id: sessionId,
+      ejercicio_id: l.ejercicio_id,
+      peso_kg: l.peso_kg || null,
+      repeticiones: l.repeticiones || null,
+      rm_estimado: l.rm_estimado || null,
+      distancia: l.distancia || null,
+      tiempo_segundos: l.tiempo_segundos || null,
+      desnivel_positivo: l.desnivel_positivo || null,
+      ritmo_calculado: l.ritmo_calculado || null,
+      notas: l.notas || null
+    }));
+
+    const { data: createdLogs } = await supabase
+      .from('registros_ejercicio')
+      .insert(logsToInsert)
+      .select();
+
+    return {
+      id: sessionId,
+      ...sessionData,
+      logs: createdLogs || []
+    };
+  }
+
+  // Local Storage Update
+  const currentSessions = await getWorkoutSessions(userId);
+  const createdLogs: ExerciseLog[] = logs.map((l, idx) => ({
+    ...l,
+    id: `log-${Date.now()}-${idx}`,
+    sesion_id: sessionId,
+    user_id: userId || 'demo-user-id-fit-12345'
+  }));
+
+  const updatedSession: WorkoutSession = {
+    ...sessionData,
+    id: sessionId,
+    user_id: userId || 'demo-user-id-fit-12345',
+    logs: createdLogs
+  };
+
+  const updatedList = currentSessions.map(s => s.id === sessionId ? updatedSession : s);
+  localStorage.setItem(LOCAL_STORAGE_SESSIONS, JSON.stringify(updatedList));
+  return updatedSession;
+}
+
+export async function deleteWorkoutSession(sessionId: string, userId?: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+
+  if (supabase && userId && userId !== 'demo-user-id-fit-12345') {
+    const { error } = await supabase
+      .from('sesiones_entrenamiento')
+      .delete()
+      .eq('id', sessionId);
+    return !error;
+  }
+
+  // Local Storage Delete
+  const currentSessions = await getWorkoutSessions(userId);
+  const filtered = currentSessions.filter(s => s.id !== sessionId);
+  localStorage.setItem(LOCAL_STORAGE_SESSIONS, JSON.stringify(filtered));
+  return true;
+}
+
 // --- CÁLCULO DE RECORDS PERSONALES (RMs y Mejores Marcas) ---
 
 export async function getPersonalRecords(userId?: string): Promise<PersonalRecord[]> {

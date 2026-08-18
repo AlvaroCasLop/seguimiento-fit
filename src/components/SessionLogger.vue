@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { Plus, Trash2, Save, Calendar as CalendarIcon, Clock, CheckCircle2 } from 'lucide-vue-next';
+import { ref, onMounted, watch } from 'vue';
+import { Plus, Trash2, Save, Calendar as CalendarIcon, Clock, CheckCircle2, Edit3, XCircle } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
-import { getExercises, saveWorkoutSession, calculate1RM, formatPace, parseTimeToSeconds } from '../services/fitnessService';
-import { Exercise, ExerciseLog } from '../types/fitness';
+import { getExercises, saveWorkoutSession, updateWorkoutSession, calculate1RM, formatPace, parseTimeToSeconds } from '../services/fitnessService';
+import { Exercise, ExerciseLog, WorkoutSession } from '../types/fitness';
+
+const props = defineProps<{
+  sessionToEdit?: WorkoutSession | null;
+}>();
 
 const emit = defineEmits<{
   (e: 'sessionLogged'): void;
+  (e: 'cancelEdit'): void;
 }>();
 
 const { user } = useAuth();
@@ -33,8 +38,49 @@ const logs = ref<LogLine[]>([]);
 const saving = ref(false);
 const successMsg = ref(false);
 
+const fillFromSession = (session?: WorkoutSession | null) => {
+  if (session) {
+    fecha.value = session.fecha;
+    nombreSesion.value = session.nombre_sesion;
+    duracionTotalMin.value = session.duracion_total_min || 60;
+    notas.value = session.notas || '';
+
+    if (session.logs && session.logs.length > 0) {
+      logs.value = session.logs.map(l => {
+        const totalSecs = l.tiempo_segundos || 0;
+        const hrs = Math.floor(totalSecs / 3600);
+        const mins = Math.floor((totalSecs % 3600) / 60);
+        const secs = totalSecs % 60;
+
+        return {
+          ejercicio_id: l.ejercicio_id,
+          peso_kg: l.peso_kg || 0,
+          repeticiones: l.repeticiones || 0,
+          distancia: l.distancia || 0,
+          horas: hrs,
+          minutos: mins,
+          segundos: secs,
+          desnivel_positivo: l.desnivel_positivo || 0,
+          notas: l.notas || ''
+        };
+      });
+    }
+  } else {
+    fecha.value = new Date().toISOString().split('T')[0];
+    nombreSesion.value = '';
+    duracionTotalMin.value = 60;
+    notas.value = '';
+    logs.value = [];
+  }
+};
+
 onMounted(async () => {
   exercises.value = await getExercises(user.value?.id);
+  fillFromSession(props.sessionToEdit);
+});
+
+watch(() => props.sessionToEdit, (newSession) => {
+  fillFromSession(newSession);
 });
 
 const addExerciseLogLine = () => {
@@ -93,40 +139,50 @@ const handleSubmit = async () => {
     };
   });
 
-  await saveWorkoutSession(
-    {
-      fecha: fecha.value,
-      nombre_sesion: nombreSesion.value,
-      duracion_total_min: Number(duracionTotalMin.value),
-      notas: notas.value
-    },
-    preparedLogs,
-    user.value?.id
-  );
+  const sessionPayload = {
+    fecha: fecha.value,
+    nombre_sesion: nombreSesion.value,
+    duracion_total_min: Number(duracionTotalMin.value),
+    notas: notas.value
+  };
+
+  if (props.sessionToEdit) {
+    await updateWorkoutSession(props.sessionToEdit.id, sessionPayload, preparedLogs, user.value?.id);
+  } else {
+    await saveWorkoutSession(sessionPayload, preparedLogs, user.value?.id);
+  }
 
   saving.value = false;
   successMsg.value = true;
   setTimeout(() => {
     successMsg.value = false;
     emit('sessionLogged');
-  }, 1200);
+  }, 1000);
 };
 </script>
 
 <template>
   <div className="glass-card" style="padding: 2rem;">
-    <div style="margin-bottom: 1.5rem;">
-      <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">
-        Registrar Nueva Sesión de Entrenamiento 📝 (Vue 3)
-      </h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">
-        Guarda tus pesos/RMs o tus marcas de tiempo en carrera, bici, natación y esquí.
-      </p>
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+          <Edit3 v-if="props.sessionToEdit" color="var(--accent-orange)" />
+          <span>{{ props.sessionToEdit ? 'Editar Sesión de Entrenamiento ✏️' : 'Registrar Nueva Sesión de Entrenamiento 📝' }}</span>
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          {{ props.sessionToEdit ? 'Modifica los ejercicios, series o marcas de esta sesión.' : 'Guarda tus pesos/RMs o tus marcas de tiempo en carrera, bici, natación y esquí.' }}
+        </p>
+      </div>
+
+      <button v-if="props.sessionToEdit" type="button" className="btn btn-secondary" @click="emit('cancelEdit')" style="padding: 0.5rem 1rem;">
+        <XCircle :size="18" />
+        <span>Cancelar Edición</span>
+      </button>
     </div>
 
     <div v-if="successMsg" style="padding: 1rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; color: #34d399; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
       <CheckCircle2 :size="22" />
-      <span>¡Sesión guardada con éxito! Actualizando tus datos...</span>
+      <span>{{ props.sessionToEdit ? '¡Sesión actualizada correctamente!' : '¡Sesión guardada con éxito!' }}</span>
     </div>
 
     <form @submit.prevent="handleSubmit" style="display: flex; flex-direction: column; gap: 1.5rem;">
@@ -223,7 +279,7 @@ const handleSubmit = async () => {
                 </div>
               </div>
 
-              <!-- Tiempo + Peso (ej. HYROX / CrossFit WODs con peso) -->
+              <!-- Tiempo + Peso -->
               <div v-else-if="ex?.tipo_metrica === 'tiempo_peso'" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: center;">
                 <div className="form-group">
                   <label>Peso ({{ ex.unidad_peso || 'kg' }})</label>
@@ -286,7 +342,7 @@ const handleSubmit = async () => {
 
       <button type="submit" className="btn btn-primary" :disabled="saving" style="padding: 0.9rem; font-size: 1rem;">
         <Save :size="20" />
-        <span>{{ saving ? 'Guardando Sesión...' : 'Guardar Sesión de Entrenamiento' }}</span>
+        <span>{{ saving ? 'Guardando...' : props.sessionToEdit ? 'Actualizar Sesión' : 'Guardar Sesión de Entrenamiento' }}</span>
       </button>
     </form>
   </div>
