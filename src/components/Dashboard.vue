@@ -167,6 +167,8 @@ const streakDays = computed(() => {
               <Bike v-else-if="rec.categoria === 'ciclismo'" :size="20" color="#10b981" />
               <Waves v-else-if="rec.categoria === 'natacion'" :size="20" color="#4facfe" />
               <Snowflake v-else-if="rec.categoria === 'esqui'" :size="20" color="#ec4899" />
+              <Flame v-else-if="rec.categoria === 'hyrox'" :size="20" color="#f59e0b" />
+              <Trophy v-else-if="rec.categoria === 'crossfit'" :size="20" color="#ef4444" />
               <Trophy v-else :size="20" color="#94a3b8" />
 
               <div>

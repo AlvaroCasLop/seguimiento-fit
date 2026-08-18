@@ -15,6 +15,18 @@ export const DEFAULT_EXERCISES: Omit<Exercise, 'id'>[] = [
   { nombre: 'Ruta Ciclismo Carretera', categoria: 'ciclismo', tipo_metrica: 'tiempo_distancia', unidad_distancia: 'km', descripcion: 'Salida de bici de ruta / fondo' },
   { nombre: 'Natación 1500m Crol', categoria: 'natacion', tipo_metrica: 'tiempo_distancia', unidad_distancia: 'm', descripcion: 'Sesión de piscina estilo libre' },
   { nombre: 'Esquí de Travesía / Montaña', categoria: 'esqui', tipo_metrica: 'tiempo_desnivel', unidad_distancia: 'km', descripcion: 'Ascenso con pieles y bajada de montaña' },
+  // HYROX
+  { nombre: 'Simulacro HYROX Completo', categoria: 'hyrox', tipo_metrica: 'solo_tiempo', descripcion: 'Carrera 8x1km + 8 estaciones de ejercicios HYROX' },
+  { nombre: 'Sled Push 50m (HYROX)', categoria: 'hyrox', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Empuje de trineo pesado' },
+  { nombre: 'Sled Pull 50m (HYROX)', categoria: 'hyrox', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Tirón de trineo con cuerda' },
+  { nombre: 'Burpee Broad Jumps 80m (HYROX)', categoria: 'hyrox', tipo_metrica: 'solo_tiempo', descripcion: 'Burpees con salto horizontal largo' },
+  { nombre: 'Wall Balls (HYROX)', categoria: 'hyrox', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Lanzamiento de balón medicinal a diana' },
+  // CROSSFIT
+  { nombre: 'WOD Fran (21-15-9)', categoria: 'crossfit', tipo_metrica: 'solo_tiempo', descripcion: 'Thrusters + Pull-ups por tiempo (Benchmark WOD)' },
+  { nombre: 'WOD Murph', categoria: 'crossfit', tipo_metrica: 'solo_tiempo', descripcion: '1 Millón Run + 100 Pull-ups + 200 Push-ups + 300 Squats + 1 Millón Run' },
+  { nombre: 'Thruster (CrossFit)', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Sentadilla frontal conectada con press militar' },
+  { nombre: 'Clean & Jerk / Dos Tiempos', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Cargada y envión olímpico' },
+  { nombre: 'Snatch / Arrancada', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Levantamiento olímpico en un movimiento' },
 ];
 
 // Cálculo de 1RM con fórmula de Epley: Peso * (1 + Reps / 30)

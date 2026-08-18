@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Plus, Dumbbell, Activity, Bike, Waves, Snowflake, Trophy } from 'lucide-vue-next';
+import { Plus, Dumbbell, Activity, Bike, Waves, Snowflake, Trophy, Flame } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
 import { getExercises, createExercise } from '../services/fitnessService';
 import { Exercise, ActivityCategory, MetricType } from '../types/fitness';
@@ -86,6 +86,8 @@ const handleCreate = async () => {
               <Bike v-else-if="ex.categoria === 'ciclismo'" :size="20" color="#10b981" />
               <Waves v-else-if="ex.categoria === 'natacion'" :size="20" color="#4facfe" />
               <Snowflake v-else-if="ex.categoria === 'esqui'" :size="20" color="#ec4899" />
+              <Flame v-else-if="ex.categoria === 'hyrox'" :size="20" color="#f59e0b" />
+              <Trophy v-else-if="ex.categoria === 'crossfit'" :size="20" color="#ef4444" />
               <Trophy v-else :size="20" color="#94a3b8" />
             </div>
             <div>
@@ -138,6 +140,8 @@ const handleCreate = async () => {
               <option value="ciclismo">Ciclismo (Ruta / MTB / Rodillo)</option>
               <option value="natacion">Natación (Piscina / Aguas abiertas)</option>
               <option value="esqui">Esquí (Travesía / Fondo / Alpino)</option>
+              <option value="hyrox">HYROX Fitness Racing</option>
+              <option value="crossfit">CrossFit / Functional Fitness</option>
               <option value="otro">Otro deporte</option>
             </select>
           </div>
