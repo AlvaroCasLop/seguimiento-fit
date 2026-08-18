@@ -154,6 +154,7 @@ const handleCreate = async () => {
               <option value="tiempo_distancia">Tiempo + Distancia (Calcula Ritmo/Velocidad)</option>
               <option value="tiempo_desnivel">Tiempo + Distancia + Desnivel positivo (+m)</option>
               <option value="solo_tiempo">Únicamente Tiempo</option>
+              <option value="tiempo_peso">Tiempo + Peso</option>
             </select>
           </div>
 
