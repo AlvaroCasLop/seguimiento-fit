@@ -73,22 +73,22 @@ const streakDays = computed(() => {
 
   <div v-else style="display: flex; flex-direction: column; gap: 2rem;">
     <!-- Banner de Bienvenida -->
-    <div className="glass-card" style="padding: 2rem; background: linear-gradient(135deg, rgba(127, 0, 255, 0.2), rgba(0, 242, 254, 0.15)); border-color: rgba(0, 242, 254, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+    <div className="glass-card" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(127, 0, 255, 0.2), rgba(0, 242, 254, 0.15)); border-color: rgba(0, 242, 254, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
       <div>
-        <span className="badge badge-carrera" style="margin-bottom: 0.75rem;">
-          Panel Principal de Entrenamiento (Vue 3)
+        <span className="badge badge-carrera" style="margin-bottom: 0.6rem;">
+          Panel de Entrenamiento
         </span>
-        <h1 style="font-size: 1.85rem; font-weight: 800; margin-bottom: 0.35rem;">
-          ¡Hola de nuevo, {{ user?.email?.split('@')[0] || 'Atleta' }}! 👋
+        <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.35rem; line-height: 1.2;">
+          ¡Hola, {{ user?.email?.split('@')[0] || 'Atleta' }}! 👋
         </h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 600px;">
-          Registra tus máximos (RM) de fuerza, tus mejores marcas de carrera, bici, esquí y natación y analiza tu ritmo de entrenamiento.
+        <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 600px;">
+          Registra tus RMs, carreras, bici, natación, esquí, HYROX y CrossFit.
         </p>
       </div>
 
-      <button className="btn btn-primary" @click="emit('goToLogger')" style="padding: 0.85rem 1.6rem; font-size: 1rem;">
-        <Plus :size="20" />
-        <span>Registrar Nuevo Entrenamiento</span>
+      <button className="btn btn-primary" @click="emit('goToLogger')" style="padding: 0.75rem 1.25rem; font-size: 0.92rem; width: 100%; max-width: 280px;">
+        <Plus :size="18" />
+        <span>Nuevo Entrenamiento</span>
       </button>
     </div>
 

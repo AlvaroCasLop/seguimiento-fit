@@ -90,9 +90,9 @@ const selectedDaySessions = computed(() => {
             :key="dayNum"
             @click="handleSelectDay(dayNum)"
             :style="{
-              height: '75px',
-              padding: '0.4rem',
-              borderRadius: '10px',
+              minHeight: '52px',
+              padding: '0.3rem',
+              borderRadius: '8px',
               background: selectedDateStr === `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
                 ? 'rgba(0, 242, 254, 0.25)'
                 : sessions.some(s => s.fecha === `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`)
