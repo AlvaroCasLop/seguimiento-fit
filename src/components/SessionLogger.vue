@@ -118,11 +118,12 @@ const handleSubmit = async () => {
     const ex = exercises.value.find(e => e.id === l.ejercicio_id);
     const isFuerza = ex?.tipo_metrica === 'peso_reps';
     const isTiempoPeso = ex?.tipo_metrica === 'tiempo_peso';
-    const isCardio = ex?.tipo_metrica === 'tiempo_distancia' || ex?.tipo_metrica === 'tiempo_desnivel' || ex?.tipo_metrica === 'solo_tiempo';
+    const isSoloTiempo = ex?.tipo_metrica === 'solo_tiempo';
+    const isCardioConDistancia = ex?.tipo_metrica === 'tiempo_distancia' || ex?.tipo_metrica === 'tiempo_desnivel';
 
-    const totalSegundos = (isCardio || isTiempoPeso) ? parseTimeToSeconds(l.horas, l.minutos, l.segundos) : undefined;
+    const totalSegundos = (isCardioConDistancia || isTiempoPeso || isSoloTiempo) ? parseTimeToSeconds(l.horas, l.minutos, l.segundos) : undefined;
     const rmEstimado = isFuerza ? calculate1RM(l.peso_kg, l.repeticiones) : undefined;
-    const ritmoCalculado = isCardio && ex ? formatPace(totalSegundos || 0, l.distancia, ex.categoria, ex.unidad_distancia) : undefined;
+    const ritmoCalculado = (isCardioConDistancia && ex) ? formatPace(totalSegundos || 0, l.distancia, ex.categoria, ex.unidad_distancia) : undefined;
 
     return {
       ejercicio_id: l.ejercicio_id,
@@ -131,7 +132,7 @@ const handleSubmit = async () => {
       peso_kg: (isFuerza || isTiempoPeso) ? Number(l.peso_kg) : undefined,
       repeticiones: isFuerza ? Number(l.repeticiones) : undefined,
       rm_estimado: rmEstimado,
-      distancia: isCardio ? Number(l.distancia) : undefined,
+      distancia: isCardioConDistancia ? Number(l.distancia) : undefined,
       tiempo_segundos: totalSegundos,
       desnivel_positivo: ex?.tipo_metrica === 'tiempo_desnivel' ? Number(l.desnivel_positivo) : undefined,
       ritmo_calculado: ritmoCalculado,
@@ -296,7 +297,19 @@ const handleSubmit = async () => {
                 </div>
               </div>
 
-              <!-- Cardio / Resistencia -->
+              <!-- Únicamente Tiempo -->
+              <div v-else-if="ex?.tipo_metrica === 'solo_tiempo'" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: center;">
+                <div className="form-group">
+                  <label>Tiempo Total (H : M : S)</label>
+                  <div style="display: flex; gap: 0.25rem;">
+                    <input type="number" min="0" className="form-control" placeholder="h" v-model.number="log.horas" />
+                    <input type="number" min="0" max="59" className="form-control" placeholder="m" v-model.number="log.minutos" />
+                    <input type="number" min="0" max="59" className="form-control" placeholder="s" v-model.number="log.segundos" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cardio / Resistencia (Con Distancia) -->
               <div v-else style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; align-items: center;">
                 <div className="form-group">
                   <label>Distancia ({{ ex?.unidad_distancia || 'km' }})</label>

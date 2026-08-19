@@ -245,7 +245,7 @@ const streakDays = computed(() => {
 
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem;">
               <span v-for="(l, lIdx) in ses.logs" :key="lIdx" :class="['badge', `badge-${l.categoria || 'otro'}`]">
-                {{ l.ejercicio_nombre }}: {{ l.peso_kg ? `${l.peso_kg}kg x ${l.repeticiones}` : l.ritmo_calculado || `${l.distancia}km` }}
+                {{ l.ejercicio_nombre }}: {{ l.peso_kg ? `${l.peso_kg}kg x ${l.repeticiones}` : l.ritmo_calculado || (l.distancia ? `${l.distancia}km` : (l.tiempo_segundos ? formatTime(l.tiempo_segundos) : '')) }}
               </span>
             </div>
           </div>
