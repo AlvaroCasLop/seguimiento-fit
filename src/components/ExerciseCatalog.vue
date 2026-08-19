@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Plus, Dumbbell, Activity, Bike, Waves, Snowflake, Trophy, Flame } from 'lucide-vue-next';
+import { Plus, Dumbbell, Activity, Bike, Waves, Snowflake, Trophy, Flame, Pencil, Trash2 } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
-import { getExercises, createExercise } from '../services/fitnessService';
+import { getExercises, createExercise, updateExercise, deleteExercise } from '../services/fitnessService';
 import { Exercise, ActivityCategory, MetricType } from '../types/fitness';
 
 const { user } = useAuth();
 const exercises = ref<Exercise[]>([]);
-const showCreateModal = ref(false);
+const showModal = ref(false);
+const showDeleteConfirmModal = ref(false);
 const loading = ref(true);
+
+const editingExerciseId = ref<string | null>(null);
+const exerciseToDelete = ref<Exercise | null>(null);
 
 const nombre = ref('');
 const categoria = ref<ActivityCategory>('fuerza');
@@ -16,7 +20,8 @@ const tipoMetrica = ref<MetricType>('peso_reps');
 const unidadDistancia = ref<'km' | 'm'>('km');
 const unidadPeso = ref<'kg' | 'lb'>('kg');
 const descripcion = ref('');
-const creating = ref(false);
+const saving = ref(false);
+const deleting = ref(false);
 
 const loadEx = async () => {
   loading.value = true;
@@ -26,27 +31,74 @@ const loadEx = async () => {
 
 onMounted(loadEx);
 
-const handleCreate = async () => {
+const openCreateModal = () => {
+  editingExerciseId.value = null;
+  nombre.value = '';
+  categoria.value = 'fuerza';
+  tipoMetrica.value = 'peso_reps';
+  unidadDistancia.value = 'km';
+  unidadPeso.value = 'kg';
+  descripcion.value = '';
+  showModal.value = true;
+};
+
+const openEditModal = (ex: Exercise) => {
+  editingExerciseId.value = ex.id;
+  nombre.value = ex.nombre;
+  categoria.value = ex.categoria;
+  tipoMetrica.value = ex.tipo_metrica;
+  unidadDistancia.value = ex.unidad_distancia || 'km';
+  unidadPeso.value = ex.unidad_peso || 'kg';
+  descripcion.value = ex.descripcion || '';
+  showModal.value = true;
+};
+
+const handleSave = async () => {
   if (!nombre.value.trim()) return;
 
-  creating.value = true;
-  const newEx = await createExercise(
-    {
-      nombre: nombre.value,
-      categoria: categoria.value,
-      tipo_metrica: tipoMetrica.value,
-      unidad_distancia: unidadDistancia.value,
-      unidad_peso: unidadPeso.value,
-      descripcion: descripcion.value
-    },
-    user.value?.id
-  );
+  saving.value = true;
+  const payload = {
+    nombre: nombre.value,
+    categoria: categoria.value,
+    tipo_metrica: tipoMetrica.value,
+    unidad_distancia: unidadDistancia.value,
+    unidad_peso: unidadPeso.value,
+    descripcion: descripcion.value
+  };
 
-  exercises.value.push(newEx);
-  creating.value = false;
-  showCreateModal.value = false;
-  nombre.value = '';
-  descripcion.value = '';
+  if (editingExerciseId.value) {
+    // Editar ejercicio existente
+    const updated = await updateExercise(editingExerciseId.value, payload, user.value?.id);
+    const index = exercises.value.findIndex(e => e.id === editingExerciseId.value);
+    if (index !== -1) {
+      exercises.value[index] = updated;
+    }
+  } else {
+    // Crear nuevo ejercicio
+    const newEx = await createExercise(payload, user.value?.id);
+    exercises.value.push(newEx);
+  }
+
+  saving.value = false;
+  showModal.value = false;
+};
+
+const confirmDelete = (ex: Exercise) => {
+  exerciseToDelete.value = ex;
+  showDeleteConfirmModal.value = true;
+};
+
+const handleDelete = async () => {
+  if (!exerciseToDelete.value) return;
+
+  deleting.value = true;
+  const success = await deleteExercise(exerciseToDelete.value.id, user.value?.id);
+  if (success) {
+    exercises.value = exercises.value.filter(e => e.id !== exerciseToDelete.value?.id);
+  }
+  deleting.value = false;
+  showDeleteConfirmModal.value = false;
+  exerciseToDelete.value = null;
 };
 </script>
 
@@ -58,13 +110,13 @@ const handleCreate = async () => {
   <div v-else style="display: flex; flex-direction: column; gap: 2rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
       <div>
-        <h2 style="font-size: 1.6rem; font-weight: 800;">Catálogo de Ejercicios & Métricas 🏋️‍♂️ (Vue 3)</h2>
+        <h2 style="font-size: 1.6rem; font-weight: 800;">Catálogo de Ejercicios & Métricas 🏋️‍♂️</h2>
         <p style="color: var(--text-muted); font-size: 0.9rem;">
-          Crea y organiza tus ejercicios personalizados para fuerza (RMs) y deportes de resistencia (carrera, bici, natación, esquí).
+          Crea, edita y organiza tus ejercicios personalizados para fuerza (RMs) y deportes de resistencia.
         </p>
       </div>
 
-      <button className="btn btn-primary" @click="showCreateModal = true">
+      <button className="btn btn-primary" @click="openCreateModal">
         <Plus :size="20" />
         <span>Crear Nuevo Ejercicio</span>
       </button>
@@ -97,6 +149,26 @@ const handleCreate = async () => {
               </span>
             </div>
           </div>
+
+          <!-- Acciones de Edición y Borrado -->
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            <button
+              type="button"
+              title="Editar ejercicio"
+              style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 0.45rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              @click="openEditModal(ex)"
+            >
+              <Pencil :size="15" />
+            </button>
+            <button
+              type="button"
+              title="Eliminar ejercicio"
+              style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 0.45rem; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              @click="confirmDelete(ex)"
+            >
+              <Trash2 :size="15" />
+            </button>
+          </div>
         </div>
 
         <div style="font-size: 0.82rem; color: var(--text-muted); background: rgba(15, 23, 42, 0.5); padding: 0.65rem 0.85rem; border-radius: 8px;">
@@ -114,14 +186,14 @@ const handleCreate = async () => {
       </div>
     </div>
 
-    <!-- Modal para Crear Ejercicio -->
-    <div v-if="showCreateModal" className="modal-overlay">
+    <!-- Modal para Crear / Editar Ejercicio -->
+    <div v-if="showModal" className="modal-overlay">
       <div className="modal-content">
         <h2 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 1.25rem;">
-          Crear Nuevo Ejercicio Personalizado
+          {{ editingExerciseId ? 'Editar Ejercicio' : 'Crear Nuevo Ejercicio Personalizado' }}
         </h2>
 
-        <form @submit.prevent="handleCreate" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <form @submit.prevent="handleSave" style="display: flex; flex-direction: column; gap: 1.25rem;">
           <div className="form-group">
             <label>Nombre del Ejercicio</label>
             <input
@@ -185,14 +257,37 @@ const handleCreate = async () => {
           </div>
 
           <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
-            <button type="button" className="btn btn-secondary" @click="showCreateModal = false">
+            <button type="button" className="btn btn-secondary" @click="showModal = false">
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary" :disabled="creating">
-              {{ creating ? 'Guardando...' : 'Crear Ejercicio' }}
+            <button type="submit" className="btn btn-primary" :disabled="saving">
+              {{ saving ? 'Guardando...' : (editingExerciseId ? 'Guardar Cambios' : 'Crear Ejercicio') }}
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmación de Borrado -->
+    <div v-if="showDeleteConfirmModal" className="modal-overlay">
+      <div className="modal-content" style="max-width: 420px;">
+        <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.75rem; color: #ef4444; display: flex; align-items: center; gap: 0.5rem;">
+          <Trash2 :size="22" />
+          <span>Eliminar Ejercicio</span>
+        </h2>
+
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+          ¿Estás seguro de que deseas eliminar el ejercicio <strong>"{{ exerciseToDelete?.nombre }}"</strong>? Esta acción no se puede deshacer.
+        </p>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" className="btn btn-secondary" @click="showDeleteConfirmModal = false" :disabled="deleting">
+            Cancelar
+          </button>
+          <button type="button" className="btn btn-danger" @click="handleDelete" :disabled="deleting" style="background: #ef4444; color: white;">
+            {{ deleting ? 'Eliminando...' : 'Sí, Eliminar' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

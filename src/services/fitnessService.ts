@@ -147,6 +147,52 @@ export async function createExercise(exercise: Omit<Exercise, 'id'>, userId?: st
   return newEx;
 }
 
+export async function updateExercise(id: string, exerciseData: Partial<Exercise>, userId?: string): Promise<Exercise> {
+  const supabase = getSupabaseClient();
+
+  if (supabase && userId && userId !== 'demo-user-id-fit-12345') {
+    const { data, error } = await supabase
+      .from('ejercicios')
+      .update(exerciseData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (!error && data) {
+      return data as Exercise;
+    }
+  }
+
+  // Local Storage save
+  const current = await getExercises(userId);
+  const updated = current.map(e => (e.id === id ? { ...e, ...exerciseData } : e));
+  localStorage.setItem(LOCAL_STORAGE_EXERCISES, JSON.stringify(updated));
+
+  const updatedEx = updated.find(e => e.id === id);
+  return updatedEx || ({ id, ...exerciseData } as Exercise);
+}
+
+export async function deleteExercise(id: string, userId?: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+
+  if (supabase && userId && userId !== 'demo-user-id-fit-12345') {
+    const { error } = await supabase
+      .from('ejercicios')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      return true;
+    }
+  }
+
+  // Local Storage save
+  const current = await getExercises(userId);
+  const filtered = current.filter(e => e.id !== id);
+  localStorage.setItem(LOCAL_STORAGE_EXERCISES, JSON.stringify(filtered));
+  return true;
+}
+
 // --- SERVICIO DE SESIONES DE ENTRENAMIENTO ---
 
 export async function getWorkoutSessions(userId?: string): Promise<WorkoutSession[]> {
