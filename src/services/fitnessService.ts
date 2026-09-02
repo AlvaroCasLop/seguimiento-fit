@@ -96,6 +96,7 @@ export function parseTimeToSeconds(hours: number, minutes: number, seconds: numb
 
 export async function getExercises(userId?: string): Promise<Exercise[]> {
   const supabase = getSupabaseClient();
+  let userExercises: Exercise[] = [];
 
   if (supabase && userId && userId !== 'demo-user-id-fit-12345') {
     const { data, error } = await supabase
@@ -104,28 +105,40 @@ export async function getExercises(userId?: string): Promise<Exercise[]> {
       .order('nombre', { ascending: true });
 
     if (!error && data) {
-      return data as Exercise[];
+      userExercises = data as Exercise[];
+    }
+  } else {
+    // Fallback Local Storage
+    const localData = localStorage.getItem(LOCAL_STORAGE_EXERCISES);
+    if (localData) {
+      try {
+        userExercises = JSON.parse(localData);
+      } catch {
+        // ignore
+      }
     }
   }
 
-  // Fallback Local Storage
-  const localData = localStorage.getItem(LOCAL_STORAGE_EXERCISES);
-  if (localData) {
-    try {
-      return JSON.parse(localData);
-    } catch {
-      // ignore
-    }
-  }
-
-  // Si no hay datos locales, sembrar por defecto
+  // Generar lista de ejercicios por defecto del sistema
   const defaultList: Exercise[] = DEFAULT_EXERCISES.map((ex, idx) => ({
     ...ex,
-    id: `local-ex-${idx + 1}`,
-    user_id: userId || 'demo-user-id-fit-12345'
+    id: `default-ex-${idx + 1}`,
+    user_id: 'system'
   }));
-  localStorage.setItem(LOCAL_STORAGE_EXERCISES, JSON.stringify(defaultList));
-  return defaultList;
+
+  // Filtrar para evitar duplicados si un usuario creó un ejercicio con el mismo nombre exacto
+  const userExNames = new Set(userExercises.map(e => e.nombre.trim().toLowerCase()));
+  const missingDefaults = defaultList.filter(d => !userExNames.has(d.nombre.trim().toLowerCase()));
+
+  const combined = [...userExercises, ...missingDefaults];
+  combined.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+  // Guardar en localStorage de respaldo si no hay nada guardado aún
+  if (userExercises.length === 0 && !supabase) {
+    localStorage.setItem(LOCAL_STORAGE_EXERCISES, JSON.stringify(combined));
+  }
+
+  return combined;
 }
 
 export async function createExercise(exercise: Omit<Exercise, 'id'>, userId?: string): Promise<Exercise> {
