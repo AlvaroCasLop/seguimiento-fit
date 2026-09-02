@@ -21,12 +21,20 @@ export const DEFAULT_EXERCISES: Omit<Exercise, 'id'>[] = [
   { nombre: 'Sled Pull 50m (HYROX)', categoria: 'hyrox', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Tirón de trineo con cuerda' },
   { nombre: 'Burpee Broad Jumps 80m (HYROX)', categoria: 'hyrox', tipo_metrica: 'solo_tiempo', descripcion: 'Burpees con salto horizontal largo' },
   { nombre: 'Wall Balls (HYROX)', categoria: 'hyrox', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Lanzamiento de balón medicinal a diana' },
-  // CROSSFIT
+  // CROSSFIT & WOD MOVEMENTS
   { nombre: 'WOD Fran (21-15-9)', categoria: 'crossfit', tipo_metrica: 'solo_tiempo', descripcion: 'Thrusters + Pull-ups por tiempo (Benchmark WOD)' },
-  { nombre: 'WOD Murph', categoria: 'crossfit', tipo_metrica: 'solo_tiempo', descripcion: '1 Millón Run + 100 Pull-ups + 200 Push-ups + 300 Squats + 1 Millón Run' },
+  { nombre: 'WOD Murph', categoria: 'crossfit', tipo_metrica: 'solo_tiempo', descripcion: '1 Milla Run + 100 Pull-ups + 200 Push-ups + 300 Squats + 1 Milla Run' },
   { nombre: 'Thruster (CrossFit)', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Sentadilla frontal conectada con press militar' },
   { nombre: 'Clean & Jerk / Dos Tiempos', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Cargada y envión olímpico' },
   { nombre: 'Snatch / Arrancada', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Levantamiento olímpico en un movimiento' },
+  { nombre: 'Dominadas / Pull-ups', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Tracción gimnástica en barra (con o sin lastre)' },
+  { nombre: 'Flexiones / Push-ups', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Empuje de pecho en suelo' },
+  { nombre: 'Kettlebell Swing', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Balanceo de pesa rusa' },
+  { nombre: 'Toes to Bar (T2B)', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Pies a la barra' },
+  { nombre: 'Box Jumps / Saltos al Cajón', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Salto pliométrico a cajón' },
+  { nombre: 'Double Unders / Salto Doble', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Salto doble de comba' },
+  { nombre: 'Dumbbell Devil Press', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Burpee + Snatch con mancuernas' },
+  { nombre: 'Burpees', categoria: 'crossfit', tipo_metrica: 'peso_reps', unidad_peso: 'kg', descripcion: 'Flexión y salto vertical' }
 ];
 
 // Cálculo de 1RM con fórmula de Epley: Peso * (1 + Reps / 30)
